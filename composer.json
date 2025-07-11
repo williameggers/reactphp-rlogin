@@ -1,0 +1,48 @@
+{
+    "name": "williameggers/reactphp-rlogin",
+    "description": "An rlogin client for ReactPHP",
+    "keywords": ["RLogin", "client", "async", "ReactPHP"],
+    "type": "library",
+    "license": "BSD-2-Clause",
+    "scripts": {
+        "test": "vendor/bin/pest"
+    },
+    "authors": [
+        {
+            "name": "William Eggers",
+            "email": "william@eggers.id.au"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "evenement/evenement": "^3.0",
+        "react/event-loop": "^1.5",
+        "react/promise-timer": "^1.11",
+        "react/socket": "^1.16"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.82",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-type-coverage": "^3.6",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^9.6 || ^7.5 || ^11.5",
+        "react/async": "^4.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "WilliamEggers\\React\\RLogin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WilliamEggers\\Tests\\React\\RLogin\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    }
+}

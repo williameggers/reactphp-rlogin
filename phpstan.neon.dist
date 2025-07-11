@@ -1,0 +1,10 @@
+parameters:
+    level: max
+
+    paths:
+        - src/
+
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # ignore undefined methods due to magic `__call()` method
+        - identifier: missingType.iterableValue
