@@ -36,6 +36,7 @@ final class Connection implements ConnectionInterface
     use EventEmitterTrait;
 
     private const CAN = 0x18;
+
     private const CR = 0x0D;
 
     // START
@@ -43,10 +44,15 @@ final class Connection implements ConnectionInterface
 
     // STOP
     private const DC3 = 0x13;
+
     private const DOT = 0x2E;
+
     private const EOM = 0x19;
+
     private const EOT = 0x04;
+
     private const LF = 0x0A;
+
     private const SUB = 0x1A;
 
     // A control byte of hex 02 causes the client to discard all buffered
@@ -66,60 +72,46 @@ final class Connection implements ConnectionInterface
     // The client responds by sending the current window size.
     private const WINDOW = 0x80;
 
-    private ConnectionInterface $connection;
-
     /** @var array<string, bool> */
-    private array $state;
+    private array $state = [
+        'connected' => false,
+        // Initially, the client begins operation in "cooked" (as opposed to to "raw") mode.
+        'cooked' => true,
+        'suspendInput' => false,
+        'suspendOutput' => false,
+        'watchForClientEscape' => true,
+        'clientHasEscaped' => false,
+    ];
 
     /** @var array<int, callable> */
     private array $clientEscapes = [];
-
-    /** @var array<string,float|int|string> */
-    private array $properties;
 
     /**
      * RLogin Connection.
      *
      * @param array<string,float|int|string> $properties
      */
-    public function __construct(ConnectionInterface $connection, array $properties)
+    public function __construct(private ConnectionInterface $connection, private array $properties)
     {
-        $this->connection = $connection;
-        $this->properties = $properties;
-
-        /**
-         * While 'connected' is exposed via getter/setter, it's only marginally
-         * useful.  The rest are for internal use only at the moment.
-         */
-        $this->state = [
-            'connected' => false,
-            // Initially, the client begins operation in "cooked" (as opposed to to "raw") mode.
-            'cooked' => true,
-            'suspendInput' => false,
-            'suspendOutput' => false,
-            'watchForClientEscape' => true,
-            'clientHasEscaped' => false,
-        ];
-
         // Client escape handlers
         // As suggested by RFC1282
         $this->clientEscapes = [
             self::DOT => fn () => $this->disconnect(),
             self::EOT => fn () => $this->disconnect(),
-            self::SUB => function () {
+            self::SUB => function (): void {
                 $this->state['suspendInput'] = ! $this->state['suspendInput'];
                 $this->state['suspendOutput'] = $this->state['suspendInput'];
             },
-            self::EOM => function () {
+            self::EOM => function (): void {
                 $this->state['suspendInput'] = ! $this->state['suspendInput'];
                 $this->state['suspendOutput'] = false;
             },
         ];
 
-        $connection->on('data', fn (string $data) => $this->handleData($data));
-        $connection->on('error', fn (\Throwable $e) => $this->emit('error', [$e]));
-        $connection->on('close', fn () => $this->handleDisconnect());
-        $connection->on('end', fn () => $this->handleDisconnect());
+        $this->connection->on('data', fn (string $data) => $this->handleData($data));
+        $this->connection->on('error', fn (\Throwable $e) => $this->emit('error', [$e]));
+        $this->connection->on('close', fn () => $this->handleDisconnect());
+        $this->connection->on('end', fn () => $this->handleDisconnect());
     }
 
     public function __get(string $name): mixed
@@ -130,16 +122,16 @@ final class Connection implements ConnectionInterface
     public function __set(string $name, float|int|string $value): void
     {
         if (! in_array($name, ['rows', 'columns', 'pixelsX', 'pixelsY', 'clientEscape'])) {
-            throw new \InvalidArgumentException("Invalid property: '{$name}'");
+            throw new \InvalidArgumentException(sprintf("Invalid property: '%s'", $name));
         }
 
         if (in_array($name, ['rows', 'columns', 'pixelsX', 'pixelsY'], true)) {
             if (! is_int($value) || $value <= 0) {
-                throw new \InvalidArgumentException("Invalid '{$name}' setting {$value}");
+                throw new \InvalidArgumentException(sprintf("Invalid '%s' setting %s", $name, $value));
             }
         } elseif ('clientEscape' === $name) {
             if (! is_string($value) || 1 !== strlen($value)) {
-                throw new \InvalidArgumentException("Invalid 'clientEscape' setting {$value}");
+                throw new \InvalidArgumentException('Invalid \'clientEscape\' setting ' . $value);
             }
         }
 
@@ -267,6 +259,7 @@ final class Connection implements ConnectionInterface
             if (1 !== strlen($ch)) {
                 throw new \InvalidArgumentException('addClientEscape: invalid string argument');
             }
+
             $ch = ord($ch);
         }
 
@@ -427,15 +420,23 @@ final class Connection implements ConnectionInterface
                     continue 2;
 
                 case self::RAW: // 0x10
-                    $this->state['cooked'] = false;
-                    $this->state['suspendOutput'] = false;
+                    if ($this->state['cooked']) {
+                        $this->state['cooked'] = false;
+                        $this->state['suspendOutput'] = false;
 
-                    continue 2;
+                        continue 2;
+                    }
+
+                    break;
 
                 case self::COOKED: // 0x20
-                    $this->state['cooked'] = true;
+                    if (! $this->state['cooked']) {
+                        $this->state['cooked'] = true;
 
-                    continue 2;
+                        continue 2;
+                    }
+
+                    break;
 
                 case self::WINDOW: // 0x80
                     $this->sendWCCS();
@@ -492,6 +493,7 @@ final class Connection implements ConnectionInterface
         if (! $this->state['connected']) {
             return;
         }
+
         $this->state['connected'] = false;
         $this->emit('close');
     }

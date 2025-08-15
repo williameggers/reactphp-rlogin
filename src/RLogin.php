@@ -101,7 +101,7 @@ final class RLogin implements EventEmitterInterface
 
         foreach ($requiredFields as $field => $type) {
             if (! array_key_exists($field, $options)) {
-                throw new \InvalidArgumentException("Missing required option: '{$field}'");
+                throw new \InvalidArgumentException(sprintf("Missing required option: '%s'", $field));
             }
 
             $value = $options[$field];
@@ -111,7 +111,7 @@ final class RLogin implements EventEmitterInterface
             };
 
             if (! $isValid) {
-                throw new \InvalidArgumentException("Invalid type for '{$field}': expected {$type}");
+                throw new \InvalidArgumentException(sprintf("Invalid type for '%s': expected %s", $field, $type));
             }
         }
 
@@ -127,16 +127,16 @@ final class RLogin implements EventEmitterInterface
     public function __set(string $name, float|int|string $value): void
     {
         if (! in_array($name, ['rows', 'columns', 'pixelsX', 'pixelsY', 'clientEscape'])) {
-            throw new \InvalidArgumentException("Invalid property: '{$name}'");
+            throw new \InvalidArgumentException(sprintf("Invalid property: '%s'", $name));
         }
 
         if (in_array($name, ['rows', 'columns', 'pixelsX', 'pixelsY'], true)) {
             if (! is_int($value) || $value <= 0) {
-                throw new \InvalidArgumentException("Invalid '{$name}' setting {$value}");
+                throw new \InvalidArgumentException(sprintf("Invalid '%s' setting %s", $name, $value));
             }
         } elseif ('clientEscape' === $name) {
             if (! is_string($value) || 1 !== strlen($value)) {
-                throw new \InvalidArgumentException("Invalid 'clientEscape' setting {$value}");
+                throw new \InvalidArgumentException('Invalid \'clientEscape\' setting ' . $value);
             }
         }
 
@@ -163,7 +163,7 @@ final class RLogin implements EventEmitterInterface
 
             foreach ($requiredPropertyFields as $field => $type) {
                 if (! array_key_exists($field, $properties)) {
-                    throw new \InvalidArgumentException("Missing required option: '{$field}'");
+                    throw new \InvalidArgumentException(sprintf("Missing required option: '%s'", $field));
                 }
 
                 $value = $properties[$field];
@@ -173,14 +173,14 @@ final class RLogin implements EventEmitterInterface
                 };
 
                 if (! $isValid) {
-                    throw new \InvalidArgumentException("Invalid type for '{$field}': expected {$type}");
+                    throw new \InvalidArgumentException(sprintf("Invalid type for '%s': expected %s", $field, $type));
                 }
             }
         }
 
         $deferred = new Deferred();
-        $this->connector->connect("tcp://{$this->options['host']}:{$this->options['port']}")->then(
-            function (ConnectionInterface $socketConnection) use ($deferred, $properties) {
+        $this->connector->connect(sprintf('tcp://%s:%d', $this->options['host'], $this->options['port']))->then(
+            function (ConnectionInterface $socketConnection) use ($deferred, $properties): void {
                 /**
                  * These defaults can be adjusted via this.rows, this.columns, etc.
                  * They are used when sending a Window Change Control Sequence to the
@@ -215,11 +215,11 @@ final class RLogin implements EventEmitterInterface
                  * The server has returned a zero byte to indicate that it has received these
                  * strings and is now in data transfer mode.
                  */
-                $connection->on('connection-established', function () use ($deferred, $connection) {
+                $connection->on('connection-established', function () use ($deferred, $connection): void {
                     $deferred->resolve($connection);
                 });
             },
-            function (\Throwable $e) use ($deferred) {
+            function (\Throwable $e) use ($deferred): void {
                 $deferred->reject($e);
             }
         );
