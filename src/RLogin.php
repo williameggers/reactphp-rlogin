@@ -91,10 +91,11 @@ final class RLogin implements EventEmitterInterface
     public function __construct(array $options, ?LoopInterface $loop = null, array $context = [])
     {
         $requiredFields = [
-            'host' => 'string',
+            'host' => 'non-empty-string',
             'port' => 'integer',
-            'clientUsername' => 'string',
-            'serverUsername' => 'string',
+            'clientUsername' => 'non-empty-string',
+            'serverUsername' => 'non-empty-string',
+            // Empty string is required for some RLogin hosts like gOLD mINE Community Door Server
             'terminalType' => 'string',
             'terminalSpeed' => 'integer',
         ];
@@ -107,7 +108,8 @@ final class RLogin implements EventEmitterInterface
             $value = $options[$field];
             $isValid = match ($type) {
                 'integer' => is_int($value),
-                'string' => is_string($value) && '' !== $value,
+                'non-empty-string' => is_string($value) && '' !== $value,
+                'string' => is_string($value),
             };
 
             if (! $isValid) {
@@ -136,7 +138,7 @@ final class RLogin implements EventEmitterInterface
             }
         } elseif ('clientEscape' === $name) {
             if (! is_string($value) || 1 !== strlen($value)) {
-                throw new \InvalidArgumentException('Invalid \'clientEscape\' setting ' . $value);
+                throw new \InvalidArgumentException("Invalid 'clientEscape' setting " . $value);
             }
         }
 

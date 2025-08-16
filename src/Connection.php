@@ -131,7 +131,7 @@ final class Connection implements ConnectionInterface
             }
         } elseif ('clientEscape' === $name) {
             if (! is_string($value) || 1 !== strlen($value)) {
-                throw new \InvalidArgumentException('Invalid \'clientEscape\' setting ' . $value);
+                throw new \InvalidArgumentException("Invalid 'clientEscape' setting " . $value);
             }
         }
 
