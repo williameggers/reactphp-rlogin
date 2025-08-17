@@ -35,7 +35,7 @@ use React\Promise\PromiseInterface;
 use function React\Promise\Timer\timeout;
 
 use React\Socket\ConnectionInterface;
-use React\Socket\TcpConnector;
+use React\Socket\Connector;
 
 /**
  * RLogin client implementation for ReactPHP.
@@ -64,7 +64,7 @@ final class RLogin implements EventEmitterInterface
 {
     use EventEmitterTrait;
 
-    private TcpConnector $connector;
+    private Connector $connector;
 
     /** @var array{host:string,port:int,clientUsername:string,serverUsername:string,terminalType:string,terminalSpeed:int} */
     private array $options;
@@ -86,7 +86,7 @@ final class RLogin implements EventEmitterInterface
      *     terminalSpeed: int
      * } $options   Configuration options required to initiate the RLogin connection
      * @param null|LoopInterface $loop    Optional ReactPHP event loop instance. If not provided, the default loop is used.
-     * @param array              $context Optional context array passed to the underlying TcpConnector (e.g., TLS options).
+     * @param array              $context Optional context array passed to the underlying Connector (e.g., TLS options).
      */
     public function __construct(array $options, ?LoopInterface $loop = null, array $context = [])
     {
@@ -118,7 +118,7 @@ final class RLogin implements EventEmitterInterface
         }
 
         $this->options = $options;
-        $this->connector = new TcpConnector($loop, $context);
+        $this->connector = new Connector($loop, $context);
     }
 
     public function __get(string $name): mixed

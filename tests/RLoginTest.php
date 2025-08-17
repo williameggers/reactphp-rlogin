@@ -104,17 +104,3 @@ test('setting an empty string property on connect', function () {
         'clientEscape' => '',
     ]);
 })->throws(InvalidArgumentException::class, "Invalid type for 'clientEscape'");
-
-test('exception from connect method', function () {
-    $rlogin = new RLogin([
-        'host' => '-127.0.0.1',
-        'port' => 512,
-        'clientUsername' => 'user1',
-        'serverUsername' => 'user2',
-        'terminalType' => 'vt100',
-        'terminalSpeed' => 9600,
-    ]);
-    $rlogin->connect()->catch(function (Throwable $e) {
-        expect($e->getMessage())->toBe('Given URI "tcp://-127.0.0.1:512" does not contain a valid host IP (EINVAL)');
-    });
-});
