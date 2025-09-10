@@ -1,6 +1,9 @@
 # RLogin client for ReactPHP
 
 [![CI status](https://github.com/williameggers/reactphp-rlogin/workflows/CI/badge.svg)](https://github.com/williameggers/reactphp-rlogin/actions)
+[![Latest Stable Version](http://poser.pugx.org/williameggers/reactphp-rlogin/v)](https://packagist.org/packages/williameggers/reactphp-rlogin)
+[![Latest Unstable Version](http://poser.pugx.org/williameggers/reactphp-rlogin/v/unstable)](https://packagist.org/packages/williameggers/reactphp-rlogin)
+[![License](http://poser.pugx.org/williameggers/reactphp-rlogin/license)](https://packagist.org/packages/williameggers/reactphp-rlogin)
 
 An asynchronous [RLogin](https://datatracker.ietf.org/doc/html/rfc1282) client for PHP, built on [ReactPHP](https://reactphp.org/). 
 Supports client escape sequences, terminal window resizing, and full event-driven interaction.

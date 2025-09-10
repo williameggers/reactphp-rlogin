@@ -26,7 +26,7 @@
 
 use WilliamEggers\React\RLogin\RLogin;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->validOptions = [
         'host' => '127.0.0.1',
         'port' => 513,
@@ -37,29 +37,29 @@ beforeEach(function () {
     ];
 });
 
-test('constructing with missing fields throws exception', function () {
+test('constructing with missing fields throws exception', function (): void {
     $options = $this->validOptions;
     unset($options['host']);
     new RLogin($options);
 })->throws(InvalidArgumentException::class, "Missing required option: 'host'");
 
-test('constructing with invalid field types throws exception', function () {
+test('constructing with invalid field types throws exception', function (): void {
     $options = $this->validOptions;
     $options['port'] = 'not-a-port';
     new RLogin($options);
 })->throws(InvalidArgumentException::class, "Invalid type for 'port': expected integer");
 
-test('setting invalid rows throws exception', function () {
+test('setting invalid rows throws exception', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->rows = -1;
 })->throws(InvalidArgumentException::class, "Invalid 'rows' setting -1");
 
-test('setting invalid clientEscape throws exception', function () {
+test('setting invalid clientEscape throws exception', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->clientEscape = 'too long';
 })->throws(InvalidArgumentException::class, "Invalid 'clientEscape' setting too long");
 
-test('setting and getting properties works', function () {
+test('setting and getting properties works', function (): void {
     $rlogin = new RLogin($this->validOptions);
 
     $rlogin->rows = 30;
@@ -75,26 +75,26 @@ test('setting and getting properties works', function () {
     expect($rlogin->clientEscape)->toBe('!');
 });
 
-test('setting an invalid property throws exception', function () {
+test('setting an invalid property throws exception', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->invalidProperty = 123;
 })->throws(InvalidArgumentException::class, "Invalid property: 'invalidProperty'");
 
-test('setting an invalid property on connect', function () {
+test('setting an invalid property on connect', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->connect([
         'rows' => -1,
     ]);
 })->throws(InvalidArgumentException::class, "Missing required option: 'columns'");
 
-test('setting an invalid property type on connect', function () {
+test('setting an invalid property type on connect', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->connect([
         'rows' => 'string',
     ]);
 })->throws(InvalidArgumentException::class, "Invalid type for 'rows'");
 
-test('setting an empty string property on connect', function () {
+test('setting an empty string property on connect', function (): void {
     $rlogin = new RLogin($this->validOptions);
     $rlogin->connect([
         'rows' => 30,

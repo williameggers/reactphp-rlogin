@@ -30,9 +30,12 @@ use React\Socket\SocketServer;
 
 class MockRLoginServer
 {
-    private SocketServer $server;
-    private int $port;
+    private readonly SocketServer $server;
+
+    private readonly int $port;
+
     private array $dataReceived = [];
+
     private string $dataToSend = "\x00Welcome!\n";
 
     public function __construct(?int $port = null)
@@ -40,10 +43,10 @@ class MockRLoginServer
         $port ??= random_int(20000, 40000);
         $this->port = $port;
 
-        $this->server = new SocketServer("127.0.0.1:{$port}", [], Loop::get());
+        $this->server = new SocketServer('127.0.0.1:' . $port, [], Loop::get());
 
-        $this->server->on('connection', function (ConnectionInterface $conn) {
-            $conn->on('data', function ($data) use ($conn) {
+        $this->server->on('connection', function (ConnectionInterface $conn): void {
+            $conn->on('data', function ($data) use ($conn): void {
                 $this->dataReceived[] = $data;
 
                 // Send null byte at start of server response to indicate successful login

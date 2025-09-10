@@ -38,15 +38,15 @@ function delay(float $seconds): Promise
     return new Promise(fn ($resolve) => Loop::addTimer($seconds, $resolve));
 }
 
-beforeAll(function () {
+beforeAll(function (): void {
     Loop::run();
 });
 
-afterAll(function () {
+afterAll(function (): void {
     Loop::stop();
 });
 
-test('RLogin connects and emits connect event', function () {
+test('RLogin connects and emits connect event', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -62,11 +62,11 @@ test('RLogin connects and emits connect event', function () {
     $connected = null;
     $dataReceived = null;
 
-    $rlogin->connect()->then(function (Connection $connection) use (&$connected, &$dataReceived) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$connected, &$dataReceived): void {
         $connected = true;
         expect($connection->isConnected())->toBeTrue();
 
-        $connection->on('data', function ($data) use (&$dataReceived) {
+        $connection->on('data', function ($data) use (&$dataReceived): void {
             $dataReceived = $data;
         });
     });
@@ -81,7 +81,7 @@ test('RLogin connects and emits connect event', function () {
     $server->close();
 });
 
-test('RLogin disconnects and emits close event', function () {
+test('RLogin disconnects and emits close event', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -96,8 +96,8 @@ test('RLogin disconnects and emits close event', function () {
 
     $disconnected = false;
 
-    $rlogin->connect()->then(function (Connection $connection) use (&$disconnected) {
-        $connection->on('close', function () use (&$disconnected) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$disconnected): void {
+        $connection->on('close', function () use (&$disconnected): void {
             $disconnected = true;
         });
 
@@ -111,7 +111,7 @@ test('RLogin disconnects and emits close event', function () {
     $server->close();
 });
 
-test('RLogin connects and triggers sendWCCS', function () {
+test('RLogin connects and triggers sendWCCS', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -127,10 +127,10 @@ test('RLogin connects and triggers sendWCCS', function () {
     $connected = null;
     $dataReceived = null;
 
-    $rlogin->connect()->then(function (Connection $connection) use (&$connected, &$dataReceived, $server) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$connected, &$dataReceived, $server): void {
         $connected = true;
         expect($connection->isConnected())->toBeTrue();
-        $connection->on('data', function ($data) use (&$dataReceived) {
+        $connection->on('data', function ($data) use (&$dataReceived): void {
             $dataReceived = $data;
         });
         $server->flushDataReceived();
@@ -139,14 +139,14 @@ test('RLogin connects and triggers sendWCCS', function () {
 
     await(delay(0.5)); // Allow event loop to process async
 
-    expect(array_values(unpack('v4*', substr($server->getDataReceived()[0], 4))))->toBe([24, 80, 640, 480]);
+    expect(array_values(unpack('v4*', substr((string) $server->getDataReceived()[0], 4))))->toBe([24, 80, 640, 480]);
     expect($connected)->toBeTrue();
     expect($dataReceived)->toContain('Welcome');
 
     $server->close();
 });
 
-test('RLogin disconnected and triggers sendWCCS', function () {
+test('RLogin disconnected and triggers sendWCCS', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -159,17 +159,17 @@ test('RLogin disconnected and triggers sendWCCS', function () {
         'terminalSpeed' => 9600,
     ]);
 
-    $rlogin->connect()->then(function (Connection $connection) {
+    $rlogin->connect()->then(function (Connection $connection): void {
         $connection->disconnect();
         $connection->sendWCCS();
-    })->catch(function (Throwable $e) {
+    })->catch(function (Throwable $e): void {
         expect($e->getMessage())->toBe('RLogin client not connected');
     });
 
     await(delay(0.5));
 });
 
-test('RLogin disconnects via setConnected and emits disconnect event', function () {
+test('RLogin disconnects via setConnected and emits disconnect event', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -183,8 +183,8 @@ test('RLogin disconnects via setConnected and emits disconnect event', function 
     ]);
 
     $disconnected = false;
-    $rlogin->connect()->then(function (Connection $connection) use (&$disconnected) {
-        $connection->on('close', function () use (&$disconnected) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$disconnected): void {
+        $connection->on('close', function () use (&$disconnected): void {
             $disconnected = true;
         });
         $connection->setConnected(false);
@@ -197,7 +197,7 @@ test('RLogin disconnects via setConnected and emits disconnect event', function 
     $server->close();
 });
 
-test('RLogin client sends WCCS packet on request from server', function () {
+test('RLogin client sends WCCS packet on request from server', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
     $server->setDataToSend("\x00\x80");
@@ -214,7 +214,7 @@ test('RLogin client sends WCCS packet on request from server', function () {
     $rlogin->connect();
 
     await(delay(0.5));
-    expect(array_values(unpack('v4*', substr($server->getDataReceived()[1], 4))))->toBe([24, 80, 640, 480]);
+    expect(array_values(unpack('v4*', substr((string) $server->getDataReceived()[1], 4))))->toBe([24, 80, 640, 480]);
     $server->close();
 });
 
@@ -242,7 +242,7 @@ test('RLogin client sends WCCS packet on request from server', function () {
 //     expect($called)->toBeTrue();
 // });
 
-test('addClientEscape with invalid client escape string', function () {
+test('addClientEscape with invalid client escape string', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
     $rlogin = new RLogin([
@@ -255,11 +255,11 @@ test('addClientEscape with invalid client escape string', function () {
     ]);
     $called = false;
 
-    $rlogin->connect()->then(function (Connection $connection) use (&$called) {
-        $connection->addClientEscape('....', function () use (&$called) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$called): void {
+        $connection->addClientEscape('....', function () use (&$called): void {
             $called = true;
         });
-    })->catch(function (Throwable $e) {
+    })->catch(function (Throwable $e): void {
         expect($e->getMessage())->toBe('addClientEscape: invalid string argument');
     });
 
@@ -268,7 +268,7 @@ test('addClientEscape with invalid client escape string', function () {
     expect($called)->toBeFalse();
 });
 
-test('RLogin client sets raw mode', function () {
+test('RLogin client sets raw mode', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
     $server->setDataToSend("\x00Begin\x10Start\x11Stop\x13End");
@@ -284,12 +284,12 @@ test('RLogin client sets raw mode', function () {
 
     $isCooked = null;
     $dataReceived = null;
-    $rlogin->connect()->then(function (Connection $connection) use (&$isCooked, &$dataReceived) {
-        $connection->on('data', function ($data) use (&$dataReceived) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$isCooked, &$dataReceived): void {
+        $connection->on('data', function (string $data) use (&$dataReceived): void {
             $dataReceived .= $data;
         });
         // Delay for a little to allow the server to send the RAW byte
-        delay(0.1)->then(function () use ($connection, &$isCooked) {
+        delay(0.1)->then(function () use ($connection, &$isCooked): void {
             $isCooked = $connection->isCooked();
         });
     });
@@ -301,7 +301,7 @@ test('RLogin client sets raw mode', function () {
     $server->close();
 });
 
-test('RLogin client sets cooked mode', function () {
+test('RLogin client sets cooked mode', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
     $server->setDataToSend("\x00Begin\x11Start\x13Stop\x11End");
@@ -317,12 +317,12 @@ test('RLogin client sets cooked mode', function () {
 
     $isCooked = null;
     $dataReceived = null;
-    $rlogin->connect()->then(function (Connection $connection) use (&$isCooked, &$dataReceived) {
-        $connection->on('data', function ($data) use (&$dataReceived) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$isCooked, &$dataReceived): void {
+        $connection->on('data', function (string $data) use (&$dataReceived): void {
             $dataReceived .= $data;
         });
         // Delay for a little to allow the server to send the RAW byte
-        delay(0.1)->then(function () use ($connection, &$isCooked) {
+        delay(0.1)->then(function () use ($connection, &$isCooked): void {
             $isCooked = $connection->isCooked();
         });
     });
@@ -334,7 +334,7 @@ test('RLogin client sets cooked mode', function () {
     $server->close();
 });
 
-test('setting and getting properties works', function () {
+test('setting and getting properties works', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -347,7 +347,7 @@ test('setting and getting properties works', function () {
         'terminalSpeed' => 9600,
     ]);
 
-    $rlogin->connect()->then(function (Connection $connection) {
+    $rlogin->connect()->then(function (Connection $connection): void {
         $connection->rows = 30;
         $connection->columns = 100;
         $connection->pixelsX = 1024;
@@ -364,7 +364,7 @@ test('setting and getting properties works', function () {
     await(delay(0.5));
 });
 
-test('setting invalid properties ', function () {
+test('setting invalid properties ', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -377,16 +377,16 @@ test('setting invalid properties ', function () {
         'terminalSpeed' => 9600,
     ]);
 
-    $rlogin->connect()->then(function (Connection $connection) {
+    $rlogin->connect()->then(function (Connection $connection): void {
         $connection->invalidProperty = 30;
-    })->catch(function (Throwable $e) {
+    })->catch(function (Throwable $e): void {
         expect($e->getMessage())->toBe("Invalid property: 'invalidProperty'");
     });
 
     await(delay(0.5));
 });
 
-test('rlogin write on disconnect', function () {
+test('rlogin write on disconnect', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -399,17 +399,17 @@ test('rlogin write on disconnect', function () {
         'terminalSpeed' => 9600,
     ]);
 
-    $rlogin->connect()->then(function (Connection $connection) {
+    $rlogin->connect()->then(function (Connection $connection): void {
         $connection->disconnect();
         $connection->write('Hello');
-    })->catch(function (Throwable $e) {
+    })->catch(function (Throwable $e): void {
         expect($e->getMessage())->toBe('RLogin client not connected');
     });
 
     await(delay(0.5));
 });
 
-test('rlogin test client escape disconnect', function () {
+test('rlogin test client escape disconnect', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
 
@@ -423,8 +423,8 @@ test('rlogin test client escape disconnect', function () {
     ]);
 
     $closed = false;
-    $rlogin->connect()->then(function (Connection $connection) use (&$closed, $server) {
-        $connection->on('close', function () use (&$closed) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$closed, $server): void {
+        $connection->on('close', function () use (&$closed): void {
             $closed = true;
         });
         $server->flushDataReceived();
@@ -438,7 +438,7 @@ test('rlogin test client escape disconnect', function () {
     expect($closed)->toBeTrue();
 });
 
-test('addClientEscape with custom client escape string', function () {
+test('addClientEscape with custom client escape string', function (): void {
     $server = new MockRLoginServer();
     $port = $server->getPort();
     $rlogin = new RLogin([
@@ -451,8 +451,8 @@ test('addClientEscape with custom client escape string', function () {
     ]);
     $called = false;
 
-    $rlogin->connect()->then(function (Connection $connection) use (&$called) {
-        $connection->addClientEscape('*', function () use (&$called) {
+    $rlogin->connect()->then(function (Connection $connection) use (&$called): void {
+        $connection->addClientEscape('*', function () use (&$called): void {
             $called = true;
         });
         $connection->write("Hello~*");

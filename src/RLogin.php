@@ -217,11 +217,11 @@ final class RLogin implements EventEmitterInterface
                  * The server has returned a zero byte to indicate that it has received these
                  * strings and is now in data transfer mode.
                  */
-                $connection->on('connection-established', function () use ($deferred, $connection): void {
+                $connection->on('connection-established', static function () use ($deferred, $connection): void {
                     $deferred->resolve($connection);
                 });
             },
-            function (\Throwable $e) use ($deferred): void {
+            static function (\Throwable $e) use ($deferred): void {
                 $deferred->reject($e);
             }
         );

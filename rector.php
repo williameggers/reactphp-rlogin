@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\CodingStyle\Rector\ArrowFunction\StaticArrowFunctionRector;
+use Rector\CodingStyle\Rector\Closure\StaticClosureRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 
@@ -20,6 +22,18 @@ return RectorConfig::configure()
         phpunitCodeQuality: true,     // Modernise PHPUnit usage
         deadCode: true                // Remove unused code, vars, imports, etc.
     )
+    ->withRules([
+        StaticArrowFunctionRector::class,
+        StaticClosureRector::class,
+    ])
+    ->withSkip([
+        StaticArrowFunctionRector::class => [
+            __DIR__ . '/tests'
+        ],
+        StaticClosureRector::class => [
+            __DIR__ . '/tests'
+        ]
+    ])
     ->withSets([
         LevelSetList::UP_TO_PHP_84,   // Enforces all rules up to PHP 8.4
         SetList::CODE_QUALITY,
